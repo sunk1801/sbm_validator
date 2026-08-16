@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import tempfile
 import traceback
+from pathlib import Path
 from collections import Counter
 
 from validator_core import MasterData, validate_file
@@ -18,6 +19,15 @@ st.set_page_config(
     layout="wide"
 )
 
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
+BASE_DIR = Path(__file__).resolve().parent
+
+MASTER_FILE = BASE_DIR / "master" / "SBM-Master-Lists.xlsx"
+
+MAX_ROWS_PER_FILE = 500
 
 # ============================================================
 # CONSTANTS
@@ -34,6 +44,39 @@ st.title("📋 SBM Data Preparation Tool")
 st.caption("Sewa Badge Management — Data Validation & Preparation")
 
 st.divider()
+
+# ============================================================
+# MASTER DATA STATUS
+# ============================================================
+
+st.header("1️⃣ SBM Master Data")
+
+if not MASTER_FILE.exists():
+
+    st.error(
+        "❌ SBM Master Lists not found."
+    )
+
+    st.code(
+        str(MASTER_FILE)
+    )
+
+    st.info(
+        "Please place SBM-Master-Lists.xlsx inside the "
+        "'master' folder."
+    )
+
+    st.stop()
+
+else:
+
+    st.success(
+        "✅ SBM Master Lists loaded"
+    )
+
+    st.caption(
+        f"Master file: {MASTER_FILE.name}"
+    )
 
 
 # ============================================================
@@ -67,22 +110,8 @@ with st.sidebar:
 
     st.caption("SBM Data Preparation Tool")
 
-
 # ============================================================
-# MASTER FILE
-# ============================================================
-
-st.header("1️⃣ SBM Master Lists")
-
-master_file = st.file_uploader(
-    "Upload SBM-Master-Lists.xlsx",
-    type=["xlsx"],
-    key="master_file"
-)
-
-
-# ============================================================
-# DATA FILES
+# SEWADAR DATA
 # ============================================================
 
 st.header("2️⃣ Sewadar Data")
@@ -114,10 +143,6 @@ start_validation = st.button(
 
 if start_validation:
 
-    if master_file is None:
-        st.error("❌ Please upload the SBM Master Lists Excel file.")
-        st.stop()
-
     if not uploaded_files:
         st.error("❌ Please upload at least one Sewadar Excel file.")
         st.stop()
@@ -126,22 +151,12 @@ if start_validation:
 
     temp_dir = tempfile.mkdtemp(prefix="sbm_")
 
-    master_path = os.path.join(
-        temp_dir,
-        "SBM-Master-Lists.xlsx"
-    )
+    master_path = str(MASTER_FILE)
 
-    # --------------------------------------------------------
-    # Save master file
-    # --------------------------------------------------------
-
-    with open(master_path, "wb") as f:
-        f.write(master_file.getbuffer())
 
     # --------------------------------------------------------
     # Load master
     # --------------------------------------------------------
-
     status = st.status(
         "🔄 Loading SBM Master Lists...",
         expanded=True

@@ -3,7 +3,7 @@ import pandas as pd
 from collections import defaultdict
 from validator_core import MasterData, validate_file
 
-MASTER_FILE = "SBM-Master-Lists.xlsx"
+MASTER_FILE = BASE_DIR / "master" / "SBM-Master-Lists.xlsx"
 INPUT_FOLDER = "input_files"
 OUTPUT_FILE = "validation_errors.xlsx"
 
