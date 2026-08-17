@@ -180,12 +180,25 @@ def verhoeff_check(num):
 
 
 def is_valid_aadhaar(num):
-    num = str(num)
-    return bool(re.fullmatch(r"\d{12}", num)) and verhoeff_check(num)
+    num = str(num).strip()
+
+    # Full Aadhaar: 12 digits + Verhoeff
+    if re.fullmatch(r"\d{12}", num):
+        return verhoeff_check(num)
+
+    # Masked Aadhaar: exactly 4 visible digits
+    if re.fullmatch(r"\d{4}", num):
+        return True
+
+    # Masked formats: XXXXXXXX1234 / ********1234
+    if re.fullmatch(r"(?:X{8}|\*{8})\d{4}", num, re.IGNORECASE):
+        return True
+
+    return False
 
 
 # ---------- OTHER VALIDATIONS ---------- #
-def is_valid_name(name, mandatory=True, words=1):
+def is_valid_name(name, mandatory=True, words=None, min_words=None, max_words=None):
     name = clean_value(name)
 
     if not name:
@@ -193,7 +206,17 @@ def is_valid_name(name, mandatory=True, words=1):
 
     parts = name.split()
 
-    if len(parts) != words:
+    # Exact word count
+    if words is not None:
+        if len(parts) != words:
+            return False
+
+    # Minimum word count
+    if min_words is not None and len(parts) < min_words:
+        return False
+
+    # Maximum word count
+    if max_words is not None and len(parts) > max_words:
         return False
 
     pattern = r"^[A-Z][a-zA-Z'-]*$"
@@ -302,7 +325,12 @@ def validate_row(row, master, row_num):
         errors.append("Invalid Father Name")
 
     # Spouse Name (Optional, 2 words)
-    if not is_valid_name(val("Spouse Name"), mandatory=False, words=2):
+    if not is_valid_name(
+        val("Spouse Name"),
+        mandatory=False,
+        min_words=2,
+        max_words=3
+    ):
         errors.append("Invalid Spouse Name")
 
     if not is_valid_photo(val("Photo File Name")):
