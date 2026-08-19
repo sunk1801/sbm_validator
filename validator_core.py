@@ -180,19 +180,21 @@ def verhoeff_check(num):
 
 
 def is_valid_aadhaar(num):
+    if num is None:
+        return False
+
     num = str(num).strip()
 
     # Full Aadhaar: 12 digits + Verhoeff
-    if re.fullmatch(r"\d{12}", num):
+    if len(num) == 12 and num.isdigit():
         return verhoeff_check(num)
 
-    # Masked Aadhaar: exactly 4 visible digits
-    # Leading zeros are valid, e.g. 0123, 0012, 0001
-    if re.fullmatch(r"\d{4}", num):
+    # Masked Aadhaar: exactly 4 digits
+    # Leading zeros are valid: 0001, 0012, 0123, 1234
+    if len(num) == 4 and num.isdigit():
         return True
 
     # Masked formats: XXXXXXXX1234 / ********1234
-    # Last 4 digits may include leading zeros
     if re.fullmatch(r"(?:X{8}|\*{8})\d{4}", num, re.IGNORECASE):
         return True
 
@@ -313,6 +315,12 @@ def validate_row(row, master, row_num):
 
     def val(col): return clean_value(row.get(col, ""))
 
+    def raw_val(col):
+        value = row.get(col, "")
+        if value is None:
+            return ""
+        return str(value).strip()
+
     # Names
     # First Name (Mandatory, 1 word)
     if not is_valid_name(val("First Name"), mandatory=True, words=1):
@@ -343,7 +351,7 @@ def validate_row(row, master, row_num):
         errors.append("Invalid Gender")
 
     # Aadhaar
-    if not is_valid_aadhaar(val("Aadhaar No")):
+    if not is_valid_aadhaar(raw_val("Aadhaar No")):
         errors.append("Invalid Aadhaar")
 
     # Mobile
