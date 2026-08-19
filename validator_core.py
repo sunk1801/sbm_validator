@@ -185,16 +185,27 @@ def is_valid_aadhaar(num):
 
     num = str(num).strip()
 
-    # Full Aadhaar: 12 digits + Verhoeff
+    # Handle Excel numeric representation like 123.0
+    if re.fullmatch(r"\d+\.0", num):
+        num = num[:-2]
+
+    # Full Aadhaar: exactly 12 digits + Verhoeff
     if len(num) == 12 and num.isdigit():
         return verhoeff_check(num)
 
-    # Masked Aadhaar: exactly 4 digits
-    # Leading zeros are valid: 0001, 0012, 0123, 1234
-    if len(num) == 4 and num.isdigit():
+    # Masked Aadhaar: 1–4 visible digits
+    # This preserves/recovers leading zeros:
+    # 1    -> 0001
+    # 12   -> 0012
+    # 123  -> 0123
+    # 0123 -> 0123
+    if num.isdigit() and 1 <= len(num) <= 4:
+        num = num.zfill(4)
         return True
 
-    # Masked formats: XXXXXXXX1234 / ********1234
+    # Masked Aadhaar formats:
+    # XXXXXXXX1234
+    # ********1234
     if re.fullmatch(r"(?:X{8}|\*{8})\d{4}", num, re.IGNORECASE):
         return True
 
@@ -317,8 +328,10 @@ def validate_row(row, master, row_num):
 
     def raw_val(col):
         value = row.get(col, "")
+        
         if value is None:
             return ""
+    
         return str(value).strip()
 
     # Names
