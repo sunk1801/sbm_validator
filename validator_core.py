@@ -344,7 +344,7 @@ def validate_row(row, master, row_num):
         errors.append("Invalid Last Name")
 
     # Father Name (Mandatory, 2–3 words)
-    if not is_valid_name(val("Father Name"), mandatory=True, min_words=1, max_words=3):
+    if not is_valid_name(val("Father Name"), mandatory=False, min_words=1, max_words=3):
         errors.append("Invalid Father Name")
 
     # Spouse Name (Optional, 2 words)
