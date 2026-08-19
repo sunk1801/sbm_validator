@@ -187,10 +187,12 @@ def is_valid_aadhaar(num):
         return verhoeff_check(num)
 
     # Masked Aadhaar: exactly 4 visible digits
+    # Leading zeros are valid, e.g. 0123, 0012, 0001
     if re.fullmatch(r"\d{4}", num):
         return True
 
     # Masked formats: XXXXXXXX1234 / ********1234
+    # Last 4 digits may include leading zeros
     if re.fullmatch(r"(?:X{8}|\*{8})\d{4}", num, re.IGNORECASE):
         return True
 
