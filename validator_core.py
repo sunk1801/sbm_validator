@@ -380,8 +380,8 @@ def validate_row(row, master, row_num):
 
     if centre not in master.centres:
         errors.append(f"Invalid Centre: {centre}")
-    elif state != master.centre_state_map.get(centre):
-        errors.append("State mismatch with centre")
+    # elif state != master.centre_state_map.get(centre):
+      #  errors.append("State mismatch with centre")
 
     # Address
     errors.extend(validate_address(val("Address Line 1")))
